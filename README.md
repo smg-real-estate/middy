@@ -1,3 +1,12 @@
+> ⚠️ This is a fork of [Middy](https://github.com/middyjs/middy). The reason behind this fork is to fix a signature error in v4 of Middy. We tried to backport the fix in the original repo but the [PR](https://github.com/middyjs/middy/pull/1203) was not accepted. Upgrading to latest version of Middy was not an option because Middy dropped support for CommonJS modules.
+>
+> The packages that we released under the `@smg-real-estate` namespace are:
+> - @smg-real-estate/middy-core
+> - @smg-real-estate/middy-secrets-manager
+> - @smg-real-estate/middy-util
+>
+> This fork is a temporary solution and it should be avoided to build new features on top of this. Once we have better support for ESM modules, we will switch back to the original Middy.
+
 <div align="center">
   <img alt="Middy logo" src="https://raw.githubusercontent.com/middyjs/middy/main/docs/img/middy-logo.svg"/>
   <p><strong>The stylish Node.js middleware engine for AWS Lambda</strong></p>

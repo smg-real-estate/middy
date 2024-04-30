@@ -1,7 +1,7 @@
 {
   "name": "@smg-real-estate/middy-core",
   "repository": "https://github.com/smg-real-estate/middy",
-  "version": "4.7.0",
+  "version": "4.8.0",
   "description": "🛵 The stylish Node.js middleware engine for AWS Lambda (core package)",
   "type": "module",
   "engines": {

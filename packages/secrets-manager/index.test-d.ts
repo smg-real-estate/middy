@@ -1,4 +1,4 @@
-import middy from '@middy/core'
+import middy from '@smg-real-estate/middy-core'
 import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
 import { captureAWSv3Client } from 'aws-xray-sdk'
 import { expectType } from 'tsd'

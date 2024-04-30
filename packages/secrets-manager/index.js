@@ -8,7 +8,7 @@ import {
   modifyCache,
   jsonSafeParse,
   catchInvalidSignatureException
-} from '@middy/util'
+} from '@smg-real-estate/middy-util'
 import {
   SecretsManagerClient,
   DescribeSecretCommand,

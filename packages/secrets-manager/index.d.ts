@@ -1,5 +1,5 @@
-import middy from '@middy/core'
-import { Options as MiddyOptions } from '@middy/util'
+import middy from '@smg-real-estate/middy-core'
+import { Options as MiddyOptions } from '@smg-real-estate/middy-util'
 import { Context as LambdaContext } from 'aws-lambda'
 import { SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 

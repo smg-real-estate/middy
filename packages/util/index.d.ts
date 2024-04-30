@@ -1,4 +1,4 @@
-import middy from '@middy/core'
+import middy from '@smg-real-estate/middy-core'
 
 interface Options<Client, ClientOptions> {
   AwsClient?: new (...[config]: [any] | any) => Client

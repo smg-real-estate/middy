@@ -1,4 +1,4 @@
-import middy from '@middy/core'
+import middy from '@smg-real-estate/middy-core'
 import { expectType } from 'tsd'
 import { SSMClient } from '@aws-sdk/client-ssm'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'

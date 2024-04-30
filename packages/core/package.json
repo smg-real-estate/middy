@@ -1,5 +1,6 @@
 {
-  "name": "@middy/core",
+  "name": "@smg-real-estate/middy-core",
+  "repository": "https://github.com/smg-real-estate/middy",
   "version": "4.7.0",
   "description": "🛵 The stylish Node.js middleware engine for AWS Lambda (core package)",
   "type": "module",
@@ -47,11 +48,6 @@
   "author": {
     "name": "Middy contributors",
     "url": "https://github.com/middyjs/middy/graphs/contributors"
-  },
-  "repository": {
-    "type": "git",
-    "url": "github:middyjs/middy",
-    "directory": "packages/core"
   },
   "bugs": {
     "url": "https://github.com/middyjs/middy/issues"

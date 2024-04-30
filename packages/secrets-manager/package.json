@@ -1,7 +1,7 @@
 {
   "name": "@smg-real-estate/middy-secrets-manager",
   "repository": "https://github.com/smg-real-estate/middy",
-  "version": "4.8.1",
+  "version": "4.8.2",
   "description": "Secrets Manager middleware for the middy framework",
   "type": "module",
   "engines": {
@@ -60,11 +60,11 @@
     "url": "https://github.com/sponsors/willfarrell"
   },
   "dependencies": {
-    "@smg-real-estate/middy-util": "4.8.1"
+    "@smg-real-estate/middy-util": "4.8.2"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.0.0",
-    "@smg-real-estate/middy-core": "4.8.1",
+    "@smg-real-estate/middy-core": "4.8.2",
     "@types/aws-lambda": "^8.10.101",
     "aws-xray-sdk": "^3.3.3"
   },

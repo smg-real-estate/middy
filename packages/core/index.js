@@ -7,7 +7,11 @@ const defaultLambdaHandler = () => {}
 const defaultPlugin = {
   timeoutEarlyInMillis: 5,
   timeoutEarlyResponse: () => {
-    throw new Error('Timeout')
+    const err = new Error("[AbortError]: The operation was aborted.", {
+      cause: { package: "@middy/core" },
+    });
+    err.name = "TimeoutError";
+    throw err;
   },
   streamifyResponse: false // Deprecate need for this when AWS provides a flag for when it's looking for it
 }
@@ -124,6 +128,9 @@ const middy = (lambdaHandler = defaultLambdaHandler, plugin = {}) => {
   return middy
 }
 
+// shared AbortController, because it's slow
+let handlerAbort = new AbortController()
+
 const runRequest = async (
   request,
   beforeMiddlewares,
@@ -132,41 +139,80 @@ const runRequest = async (
   onErrorMiddlewares,
   plugin
 ) => {
-  let timeoutAbort
-  const timeoutEarly =
-    plugin.timeoutEarly && request.context.getRemainingTimeInMillis // disable when AWS context missing (tests, containers)
+  let timeoutID;
+  // context.getRemainingTimeInMillis checked for when AWS context missing (tests, containers)
+  const getRemainingTimeInMillis =
+    request.context.getRemainingTimeInMillis ||
+    request.context.lambdaContext?.getRemainingTimeInMillis;
+  const timeoutEarly = plugin.timeoutEarly && getRemainingTimeInMillis;
   try {
     await runMiddlewares(request, beforeMiddlewares, plugin)
     // Check if before stack hasn't exit early
     if (typeof request.response === 'undefined') {
       plugin.beforeHandler?.()
 
-      const handlerAbort = new AbortController()
-
-      if (timeoutEarly) timeoutAbort = new AbortController()
-      request.response = await Promise.race([
+      // Can't manually abort and timeout with same AbortSignal
+      // https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static
+      if (handlerAbort.signal.aborted) {
+        handlerAbort = new AbortController();
+      }
+      const promises = [
         lambdaHandler(request.event, request.context, {
-          signal: handlerAbort.signal
+          signal: handlerAbort.signal,
         }),
-        timeoutEarly
-          ? setTimeout(
-            request.context.getRemainingTimeInMillis() -
-                plugin.timeoutEarlyInMillis,
-            undefined,
-            { signal: timeoutAbort.signal }
-          ).then(() => {
-            handlerAbort.abort()
-            return plugin.timeoutEarlyResponse()
-          })
-          : Promise.race([])
-      ])
-      timeoutAbort?.abort() // lambdaHandler may not be a promise
+      ];
+
+      // clearTimeout pattern is 10x faster than using AbortController
+      // Note: signal.abort is slow ~6000ns
+      // Required --test-force-exit to ignore unresolved timeoutPromise
+      if (timeoutEarly) {
+        let timeoutResolve;
+        const timeoutPromise = new Promise((resolve, reject) => {
+          timeoutResolve = () => {
+            handlerAbort.abort();
+            try {
+              resolve(plugin.timeoutEarlyResponse());
+            } catch (e) {
+              reject(e);
+            }
+          };
+        });
+        timeoutID = setTimeout(
+          timeoutResolve,
+          getRemainingTimeInMillis() - plugin.timeoutEarlyInMillis,
+        );
+        promises.push(timeoutPromise);
+      }
+      request.response = await Promise.race(promises);
+
+      if (timeoutID) {
+        clearTimeout(timeoutID);
+      }
+      // alternative for when abort() is faster
+      // if (timeoutEarly) {
+      // 	const timeoutPromise = setTimeoutPromise(
+      // 		() => {
+      // 		  handlerAbort.abort();
+      // 		  plugin.timeoutEarlyResponse()
+      // 		},
+      // 		getRemainingTimeInMillis() - plugin.timeoutEarlyInMillis,
+      // 		{
+      // 			signal: handlerAbort.signal,
+      // 		}
+      // 	);
+      // 	promises.push(timeoutPromise);
+      // }
+      // request.response = await Promise.race(promises);
+      // handlerAbort.abort(); // abort timeout
 
       plugin.afterHandler?.()
       await runMiddlewares(request, afterMiddlewares, plugin)
     }
   } catch (e) {
-    timeoutAbort?.abort() // timeout should be aborted on errors
+    // timeout should be aborted when errors happen in handler
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
 
     // Reset response changes made by after stack before error thrown
     request.response = undefined
